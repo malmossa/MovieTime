@@ -1,10 +1,4 @@
-﻿/*.pageStyle {
-    background: url(images/LandingPageBG.png);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-}*/
-
+﻿
 .title {
     font-family: var(--ma-title-font);
     font-size: 3rem;
