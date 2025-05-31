@@ -1,4 +1,9 @@
 ﻿@page "/now-playing"
+@using System.Net.Http.Json
+@using System.Text.Json
+
+@inject HttpClient http
+@inject IConfiguration config
 
 <PageTitle>Now Playing</PageTitle>
 
@@ -6,7 +11,7 @@
     <h1> <i class="bi bi-film text-primary"></i> Now Playing </h1>
     <p class="lead italic"> Movies that are now playing in theatres. </p>
     <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-lg-4">
-        @for(int i = 1; i <= 20; i++)
+        @for (int i = 1; i <= 20; i++)
         {
             <div class="col">
                 <MovieCard />
@@ -16,5 +21,43 @@
 </div>
 
 @code {
+    private MovieListResponse? nowPlayingMovies;
+    private string? tmdbkey;
+    private bool isLoading = true;
 
+    private readonly JsonSerializerOptions jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        tmdbKey = config["TMDBAccessKey"];
+
+        if (!string.IsNullOrEmpty(tmdbKey))
+        {
+            string url = "https://api.themoviedb.org/3/movie/now_playing?region=US&language=en-US";
+            http.DefaultRequestHeaders.Authorization = new("Bearer", tmdbKey);
+            string imageBaseUrl = "https://image.tmdb.org/t/p/w500";
+
+            MovieListResponse response = await http.GetFromJsonAsync<MovieListResponse>(url, jsonOptions)
+                ?? throw new HttpIOException(HttpRequestError.InvalidResponse, "Failed to load now playing movies");
+
+            foreach (var movie in response.Results)
+            {
+                if (string.IsNullOrEmpty(movie.PosterPath))
+                {
+                    movie.PosterPath = "/images/poster.png";
+                }
+                else
+                {
+                    movie.PosterPath = $"{imageBaseUrl}{movie.PosterPath}";
+                }
+            }
+
+            nowPlayingMovies = response;
+        }
+
+        isLoading = false;
+    }
 }
