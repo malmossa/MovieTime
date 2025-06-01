@@ -11,18 +11,33 @@
     <h1> <i class="bi bi-film text-primary"></i> Now Playing </h1>
     <p class="lead italic"> Movies that are now playing in theatres. </p>
     <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-lg-4">
-        @for (int i = 1; i <= 20; i++)
+
+        @if (nowPlayingMovies is null)
         {
-            <div class="col">
-                <MovieCard />
+            <div class="d-flex justify-content-center align-items-center">
+                if (isloading)
+                {
+                    <h2 class="text-muted">Loading now Playing movies...</h2>
+                } else {
+                    <h2 class="text-muted">Failed to load now Playing movies.</h2>
+                }
             </div>
+        }
+        else
+        {
+            @foreach (var movie in nowPlayingMovies.Results)
+            {
+                <div class="col">
+                    <MovieCard Movie="movie"/>
+                </div>
+            }
         }
     </div>
 </div>
 
 @code {
     private MovieListResponse? nowPlayingMovies;
-    private string? tmdbkey;
+    private string? tmdbKey;
     private bool isLoading = true;
 
     private readonly JsonSerializerOptions jsonOptions = new()
