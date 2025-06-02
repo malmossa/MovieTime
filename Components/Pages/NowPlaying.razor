@@ -1,9 +1,6 @@
 ﻿@page "/now-playing"
-@using System.Net.Http.Json
-@using System.Text.Json
 
-@inject HttpClient http
-@inject IConfiguration config
+@inject TMDBService TMDBService
 
 <PageTitle>Now Playing</PageTitle>
 
@@ -17,9 +14,9 @@
             <div class="d-flex justify-content-center align-items-center">
                 if (isloading)
                 {
-                    <h2 class="text-muted">Loading now Playing movies...</h2>
+                <h2 class="text-muted">Loading now Playing movies...</h2>
                 } else {
-                    <h2 class="text-muted">Failed to load now Playing movies.</h2>
+                <h2 class="text-muted">Failed to load now Playing movies.</h2>
                 }
             </div>
         }
@@ -28,7 +25,7 @@
             @foreach (var movie in nowPlayingMovies.Results)
             {
                 <div class="col">
-                    <MovieCard Movie="movie"/>
+                    <MovieCard Movie="movie" />
                 </div>
             }
         }
@@ -37,42 +34,22 @@
 
 @code {
     private MovieListResponse? nowPlayingMovies;
-    private string? tmdbKey;
     private bool isLoading = true;
-
-    private readonly JsonSerializerOptions jsonOptions = new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-        };
 
     protected override async Task OnInitializedAsync()
     {
-        tmdbKey = config["TMDBAccessKey"];
-
-        if (!string.IsNullOrEmpty(tmdbKey))
+        try
         {
-            string url = "https://api.themoviedb.org/3/movie/now_playing?region=US&language=en-US";
-            http.DefaultRequestHeaders.Authorization = new("Bearer", tmdbKey);
-            string imageBaseUrl = "https://image.tmdb.org/t/p/w500";
-
-            MovieListResponse response = await http.GetFromJsonAsync<MovieListResponse>(url, jsonOptions)
-                ?? throw new HttpIOException(HttpRequestError.InvalidResponse, "Failed to load now playing movies");
-
-            foreach (var movie in response.Results)
-            {
-                if (string.IsNullOrEmpty(movie.PosterPath))
-                {
-                    movie.PosterPath = "/images/poster.png";
-                }
-                else
-                {
-                    movie.PosterPath = $"{imageBaseUrl}{movie.PosterPath}";
-                }
-            }
-
-            nowPlayingMovies = response;
+            isLoading = true;
+            nowPlayingMovies = await TMDBService.GetNowPlayingMovies();
         }
-
-        isLoading = false;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }
