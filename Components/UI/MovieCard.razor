@@ -1,4 +1,5 @@
-﻿
+﻿@inject FavoritesService FavoritesService
+
 <div class="movieCard card h-100">
     <img src="@Movie.PosterPath" alt="Movie Poster" class="card-img-top" />
     <div class="card-body border border-top">
@@ -11,11 +12,53 @@
         </div>
     </div>
     <div class="movieCardFooter card-footer d-flex justify-content-between">
-        <button class="btn btn-outline-primary">Add Fav</button>
+  
+        <button class="btn btn-outline-primary" @onclick="HandleToggleFavorite">
+            @(isFavorite ? "Remove Fav" : "Add Fav")
+        </button>
+
         <a href="moviedetail" class="btn btn-primary">More Info</a>
     </div>
 </div>
 
 @code {
-    [Parameter, EditorRequired] public Movie? Movie { get; set; }
+    [Parameter, EditorRequired]
+    public Movie? Movie { get; set; }
+
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
+    bool isFavorite;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Movie is not null)
+        {
+            // Check if this movie is already in the favorites list
+            isFavorite = await FavoritesService.IsFavorite(Movie.Id);
+        }
+    }
+
+    private async Task HandleToggleFavorite()
+    {
+        if (Movie is null)
+        {
+            return;
+        }
+
+        // If it's already a favorite, remove it; otherwise, add it
+        if (isFavorite)
+        {
+            await FavoritesService.RemoveFavorite(Movie);
+            isFavorite = false;
+        }
+        else
+        {
+            await FavoritesService.AddFavorite(Movie);
+            isFavorite = true;
+        }
+
+        // Notify the parent page or component that something changed
+        await OnChange.InvokeAsync();
+    }
 }

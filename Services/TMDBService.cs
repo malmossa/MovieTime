@@ -54,5 +54,27 @@ namespace MovieTime.Services
 
             return response;
         }
+
+        public async Task<MovieListResponse> GetPopularMovies()
+        {
+            string url = "https://api.themoviedb.org/3/movie/popular?region=US&language=en-US";
+
+            MovieListResponse response = await _http.GetFromJsonAsync<MovieListResponse>(url, _jsonOptions)
+                ?? throw new HttpIOException(HttpRequestError.InvalidResponse, "Popular Movies could not be loaded");
+
+            foreach (Movie movie in response.Results)
+            {
+                if (string.IsNullOrWhiteSpace(movie.PosterPath))
+                {
+                    movie.PosterPath = "/images/poster.png";
+                }
+                else
+                {
+                    movie.PosterPath = $"http://image.tmdb.org/t/p/w500{movie.PosterPath}";
+                }
+            }
+
+            return response;
+        }
     }
 }
