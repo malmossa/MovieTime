@@ -11,4 +11,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddScoped<TMDBService>();
 
+builder.Services.AddScoped<FavoritesService>();
+
 await builder.Build().RunAsync();
