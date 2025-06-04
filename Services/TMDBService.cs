@@ -76,5 +76,27 @@ namespace MovieTime.Services
 
             return response;
         }
+
+        public async Task<MovieListResponse> SearchMovies(string query)
+        {
+            var url = $"https://api.themoviedb.org/3/search/movie?query={query}&include_adult=false&language=en-US";
+
+            MovieListResponse response = await _http.GetFromJsonAsync<MovieListResponse>(url, _jsonOptions)
+                ?? throw new HttpIOException(HttpRequestError.InvalidResponse, "Search results could not be loaded");
+
+            foreach (Movie movie in response.Results)
+            {
+                if (string.IsNullOrWhiteSpace(movie.PosterPath))
+                {
+                    movie.PosterPath = "/images/poster.png";
+                }
+                else
+                {
+                    movie.PosterPath = $"http://image.tmdb.org/t/p/w500{movie.PosterPath}";
+                }
+            }
+
+            return response;
+        }
     }
 }
