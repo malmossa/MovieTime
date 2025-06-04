@@ -5,14 +5,14 @@
 <PageTitle>Now Playing</PageTitle>
 
 <div class="container-xxl py-3">
-    <h1> <i class="bi bi-film text-primary"></i> Now Playing </h1>
+    <h1> <i class="bi bi-film text-primary me-2"></i> Now Playing </h1>
     <p class="lead italic"> Movies that are now playing in theatres. </p>
     <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-lg-4">
 
         @if (nowPlayingMovies is null)
         {
             <div class="d-flex justify-content-center align-items-center">
-                if (isloading)
+                @if (isLoading)
                 {
                 <h2 class="text-muted">Loading now Playing movies...</h2>
                 } else {
